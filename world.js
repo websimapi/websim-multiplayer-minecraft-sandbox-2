@@ -21,20 +21,7 @@ export class WorldManager {
     const loadingElement = document.getElementById('loading');
     loadingElement.style.display = 'block';
     
-    // Check if world exists
-    room.collection('world').getList().then(worlds => {
-      if (worlds.length === 0) {
-        // Create a new world with initial blocks
-        this.createInitialWorld(room);
-      } else {
-        // Load existing world
-        this.worldData = worlds[0];
-        this.renderWorld();
-      }
-      loadingElement.style.display = 'none';
-    });
-    
-    // Subscribe to world changes
+    // Subscribe to world changes first
     room.collection('world').subscribe(worlds => {
       if (worlds.length > 0) {
         const newWorldData = worlds[0];
@@ -42,9 +29,16 @@ export class WorldManager {
         if (!this.worldData || newWorldData.updated_at !== this.worldData.updated_at) {
           this.worldData = newWorldData;
           this.renderWorld();
+          loadingElement.style.display = 'none';
         }
+      } else if (worlds.length === 0) {
+        // Create a new world if none exists yet
+        this.createInitialWorld(room);
       }
     });
+    
+    // Initial check is not needed as the subscribe will handle it
+    // and could be causing race conditions
   }
   
   createInitialWorld(room) {
@@ -65,13 +59,14 @@ export class WorldManager {
     blocks['2,2,2'] = 'wood';
     blocks['-2,1,-2'] = 'sand';
     
-    this.worldData = { blocks };
-    
     room.collection('world').create({
       blocks: blocks
     }).then(world => {
-      this.worldData = world;
-      this.renderWorld();
+      console.log('Initial world created');
+      // The subscribe handler will take care of rendering
+    }).catch(err => {
+      console.error('Failed to create initial world:', err);
+      document.getElementById('loading').style.display = 'none';
     });
   }
   
@@ -190,4 +185,3 @@ export class WorldManager {
     return blockMesh.userData.position.clone();
   }
 }
-
