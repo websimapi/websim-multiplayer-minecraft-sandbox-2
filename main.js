@@ -1,7 +1,6 @@
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { PointerLockControls } from 'three/addons/controls/PointerLockControls.js';
-import nipplejs from 'nipplejs';
 import { WorldManager } from './world.js';
 import { BlockTypes } from './blocks.js';
 
@@ -410,4 +409,3 @@ window.addEventListener('DOMContentLoaded', () => {
     document.getElementById('loading').style.display = 'none';
   }, 2000);
 });
-
