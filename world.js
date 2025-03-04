@@ -36,9 +36,6 @@ export class WorldManager {
         this.createInitialWorld(room);
       }
     });
-    
-    // Initial check is not needed as the subscribe will handle it
-    // and could be causing race conditions
   }
   
   createInitialWorld(room) {

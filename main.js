@@ -277,17 +277,22 @@ class Game {
   }
   
   handleBlockAction(event) {
+    // Center the raycaster for both desktop and mobile
     this.raycaster.setFromCamera(new THREE.Vector2(0, 0), this.camera);
     
-    const intersects = this.raycaster.intersectObjects(this.worldManager.blockMeshes);
+    // Include ground in raycaster targets for placing blocks on empty ground
+    const intersects = this.raycaster.intersectObjects([...this.worldManager.blockMeshes, this.worldManager.ground]);
     
     if (intersects.length > 0 && intersects[0].distance < 10) {
       const intersect = intersects[0];
       
       if (this.isBreakMode) {
-        // Break block
-        const blockPosition = this.worldManager.getBlockPosition(intersect.object);
-        this.worldManager.removeBlock(blockPosition, this.room);
+        // Only break actual blocks, not the ground
+        if (intersect.object !== this.worldManager.ground) {
+          // Break block
+          const blockPosition = this.worldManager.getBlockPosition(intersect.object);
+          this.worldManager.removeBlock(blockPosition, this.room);
+        }
       } else {
         // Place block
         const normal = intersect.face.normal;
@@ -349,6 +354,11 @@ class Game {
     const delta = (time - (this.prevTime || time)) / 1000;
     this.prevTime = time;
     
+    // Hide loading message after world is loaded
+    if (this.worldManager.worldData) {
+      document.getElementById('loading').style.display = 'none';
+    }
+    
     if (this.controls instanceof PointerLockControls && this.controls.isLocked) {
       // Apply gravity
       this.velocity.y -= 9.8 * delta;
@@ -403,9 +413,4 @@ class Game {
 
 window.addEventListener('DOMContentLoaded', () => {
   window.game = new Game();
-  
-  // Hide loading message after game is initialized
-  setTimeout(() => {
-    document.getElementById('loading').style.display = 'none';
-  }, 2000);
 });
